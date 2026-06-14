@@ -7,6 +7,11 @@
 // Proxy CORS (transmet les headers Authorization)
 const BASE = 'https://api.clashroyale.com/v1';
 
+// Clé API — chargée depuis config.js en local, définie ici pour le déploiement
+if (typeof API_KEY === 'undefined') {
+  console.error('config.js manquant — définissez API_KEY');
+}
+
 let currentCards = [];
 
 /* ────────────────────────────────────────────────────────
@@ -40,7 +45,14 @@ async function fetchCR(path) {
   );
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${r.status}`);
+    const msg = err.message || '';
+    if (msg.includes('IP')) {
+      // Extraire l'IP du proxy depuis le message d'erreur
+      const match = msg.match(/[\d.]+\.[\d.]+\.[\d.]+\.[\d]+/);
+      const ip = match ? match[0] : 'IP inconnue';
+      throw new Error(`Ajoutez l'IP du proxy à votre clé sur developer.clashroyale.com : ${ip}`);
+    }
+    throw new Error(msg || `HTTP ${r.status}`);
   }
   return r.json();
 }
