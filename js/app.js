@@ -6,11 +6,7 @@
 
 // Proxy CORS (transmet les headers Authorization)
 const BASE = 'https://api.clashroyale.com/v1';
-
-// Clé API — chargée depuis config.js en local, définie ici pour le déploiement
-if (typeof API_KEY === 'undefined') {
-  console.error('config.js manquant — définissez API_KEY');
-}
+const API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjZiNjc1ZGIzLTliYzgtNDcxYy04MWUxLTcxNGRmYzA2MzZlNCIsImlhdCI6MTc4MTQ1MzUxNywic3ViIjoiZGV2ZWxvcGVyLzRjZGJmYjBlLWM3YmUtMGE2Mi03NmE2LTMxOWU3ODFjMGQ4NiIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxNjIuMTU4LjIzLjE3IiwiMC4wLjAuMCJdLCJ0eXBlIjoiY2xpZW50In1dfQ.H7eofLxU3xK5kl4T-oNQZESPT_CX3tCklyz1ANJZS5iYoNc3eFaHrP6QOYmpFM10-nIS4pAtsfIbWYp6807CIQ';
 
 let currentCards = [];
 
