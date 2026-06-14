@@ -1,11 +1,8 @@
 /**
  * app.js — CRStats : logique principale
- * Remplacez la valeur de API_KEY par votre clé Clash Royale.
- * Obtenez-en une sur https://developer.clashroyale.com/
- * et mettez 0.0.0.0/0 dans les IP autorisées pour GitHub Pages.
+ * La clé API est chargée depuis config.js (jamais commité).
+ * Copiez config.example.js → config.js et ajoutez votre clé.
  */
-
-const API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjQxNDdlODVkLWQwNzgtNDdhMi1hYzc3LTcyOTJhM2ZmNTRhNyIsImlhdCI6MTc4MTQ1MTMwOSwic3ViIjoiZGV2ZWxvcGVyLzRjZGJmYjBlLWM3YmUtMGE2Mi03NmE2LTMxOWU3ODFjMGQ4NiIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIwLjAuMC4wIl0sInR5cGUiOiJjbGllbnQifV19.GdyNZbg5ASgAn8cXjlgRJPJNXLOADjuZfTJARltsxjjj9Q2wJP5dKpeCuTmctdf-g04PFiLPIL-wPRvG48Kpqw';
 
 // Proxy CORS (requis pour GitHub Pages)
 const PROXY = 'https://api.allorigins.win/raw?url=';
