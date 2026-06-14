@@ -4,9 +4,9 @@
  * Copiez config.example.js → config.js et ajoutez votre clé.
  */
 
-// Proxy CORS (transmet les headers Authorization)
+// URL du Cloudflare Worker (remplace par ton URL après déploiement de worker.js)
+const WORKER_URL = 'https://TON-WORKER.TONNOM.workers.dev';
 const BASE = 'https://api.clashroyale.com/v1';
-const API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImZhZjQ4NTY3LTRjYWEtNDNiOS1iMTdiLTI3ODkzMzUzYmUxYyIsImlhdCI6MTc4MTQ1NTAyNCwic3ViIjoiZGV2ZWxvcGVyLzRjZGJmYjBlLWM3YmUtMGE2Mi03NmE2LTMxOWU3ODFjMGQ4NiIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxNzIuNzAuMTA4LjE0NSIsIjAuMC4wLjAiLCIxNzIuNjguMjM0LjgiXSwidHlwZSI6ImNsaWVudCJ9XX0.2wIW4SLdcV7YwvFQ1KI1TuBdi9Ty2W9Yn8svX0NO66tILWTV3FqUaynKGXdgW7U_6W_lGBMTAK44ik2BSzQlQg';
 
 let currentCards = [];
 
@@ -34,19 +34,14 @@ function setLoading(v) {
    FETCH
 ──────────────────────────────────────────────────────── */
 async function fetchCR(path) {
-  const url = BASE + path;
-  const r = await fetch(
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    { headers: { 'Authorization': 'Bearer ' + API_KEY } }
-  );
+  const r = await fetch(`${WORKER_URL}?path=${encodeURIComponent(path)}`);
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
     const msg = err.message || '';
     if (msg.includes('IP')) {
-      // Extraire l'IP du proxy depuis le message d'erreur
       const match = msg.match(/[\d.]+\.[\d.]+\.[\d.]+\.[\d]+/);
       const ip = match ? match[0] : 'IP inconnue';
-      throw new Error(`Ajoutez l'IP du proxy à votre clé sur developer.clashroyale.com : ${ip}`);
+      throw new Error(`Ajoutez l'IP du Worker à votre clé sur developer.clashroyale.com : ${ip}`);
     }
     throw new Error(msg || `HTTP ${r.status}`);
   }
