@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CR Stats — Profil Joueur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#181818;--bg4:#1e1e1e;
+  --border:#2a2a2a;--border2:#333;
+  --text:#e8e8e8;--muted:#888;--faint:#444;
+  --red:#e63946;--green:#2a9d4e;--gold:#f4c430;--blue:#4a90d9;
+  --r:8px;--r2:4px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;line-height:1.5}
+
+/* ——— SEARCH SCREEN ——— */
+#search-screen{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:2rem;
+  position:relative;overflow:hidden;
+}
+.search-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,#1a0606 0%,transparent 70%);
+  pointer-events:none;
+}
+.logo{
+  font-family:'Rajdhani',sans-serif;font-size:clamp(2rem,8vw,4rem);
+  font-weight:700;letter-spacing:0.05em;
+  color:var(--text);text-align:center;margin-bottom:.25rem;
+}
+.logo span{color:var(--red)}
+.tagline{color:var(--muted);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3rem;text-align:center}
+.search-wrap{width:100%;max-width:480px;position:relative}
+.search-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);font-family:'Rajdhani',sans-serif;
+  font-size:1.2rem;font-weight:500;padding:.9rem 3.5rem .9rem 1.2rem;
+  outline:none;transition:border-color .2s;letter-spacing:.05em;
+}
+.search-input::placeholder{color:var(--faint)}
+.search-input:focus{border-color:var(--red)}
+.search-btn{
+  position:absolute;right:.5rem;top:50%;transform:translateY(-50%);
+  background:var(--red);border:none;color:#fff;border-radius:6px;
+  padding:.5rem .9rem;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  font-size:.9rem;font-weight:600;letter-spacing:.05em;transition:opacity .15s;
+}
+.search-btn:hover{opacity:.85}
+.search-hint{color:var(--muted);font-size:.75rem;margin-top:.75rem;text-align:center}
+.search-hint span{color:var(--faint)}
+#search-error{color:var(--red);font-size:.8rem;margin-top:.6rem;text-align:center;min-height:1.2em}
+
+/* ——— PROFILE SCREEN ——— */
+#profile-screen{display:none;min-height:100vh}
+.top-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:.75rem 1.5rem;display:flex;align-items:center;gap:1rem;
+  position:sticky;top:0;z-index:100;
+}
+.back-btn{
+  background:none;border:1px solid var(--border2);color:var(--muted);
+  border-radius:6px;padding:.35rem .8rem;cursor:pointer;font-size:.8rem;
+  font-family:'Inter',sans-serif;transition:all .15s;
+}
+.back-btn:hover{color:var(--text);border-color:var(--muted)}
+.top-tag{font-family:'Rajdhani',sans-serif;color:var(--faint);font-size:.9rem;letter-spacing:.05em}
+
+.profile-content{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+
+/* ——— HERO CARD ——— */
+.hero{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.5rem;margin-bottom:1.5rem;
+  display:grid;grid-template-columns:auto 1fr auto;gap:1.5rem;align-items:center;
+}
+@media(max-width:600px){.hero{grid-template-columns:1fr;text-align:center}}
+.player-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--bg4);border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-size:1.8rem;font-weight:700;color:var(--red);
+  flex-shrink:0;
+}
+.player-name{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,4vw,2rem);font-weight:700;line-height:1}
+.player-tag{color:var(--muted);font-size:.8rem;margin:.25rem 0;letter-spacing:.05em}
+.player-clan{color:var(--blue);font-size:.85rem;margin-top:.4rem}
+.player-clan span{color:var(--muted)}
+.trophies-badge{
+  text-align:right;flex-shrink:0;
+}
+.trophy-num{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1}
+.trophy-label{color:var(--muted);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
+.best-trophy{color:var(--faint);font-size:.75rem;margin-top:.25rem}
+
+/* ——— STATS GRID ——— */
+.section-title{
+  font-family:'Rajdhani',sans-serif;font-size:.75rem;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);
+}
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:.75rem;margin-bottom:1.5rem;
+}
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:1rem .9rem;
+}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:1.6rem;font-weight:700;line-height:1}
+.stat-lbl{color:var(--muted);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-top:.25rem}
+.stat-green{color:var(--green)}
+.stat-red{color:var(--red)}
+.stat-gold{color:var(--gold)}
+.stat-blue{color:var(--blue)}
+
+/* ——— WIN RATE BAR ——— */
+.winrate-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1.5rem}
+.winrate-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.winrate-label{font-size:.8rem;color:var(--muted)}
+.winrate-pct{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:600}
+.bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.bar-wl{display:flex;gap:.5rem;margin-top:.6rem}
+.bar-wl span{font-size:.75rem;color:var(--muted)}
+.bar-wl b{font-family:'Rajdhani',sans-serif;font-weight:600}
+
+/* ——— ARENA / LEAGUE ——— */
+.arena-chip{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--bg4);border:1px solid var(--border2);border-radius:20px;
+  padding:.35rem .8rem;font-size:.8rem;margin-bottom:1.5rem;
+}
+.arena-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+
+/* ——— DECKS / CARDS ——— */
+.deck-section{margin-bottom:1.5rem}
+.deck-grid{display:flex;flex-direction:column;gap:.75rem}
+.deck-row{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:.9rem;
+}
+.deck-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.deck-name{font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.deck-level{font-size:.75rem;color:var(--faint)}
+.cards-row{
+  display:grid;grid-template-columns:repeat(8,1fr);gap:5px;
+}
+@media(max-width:500px){.cards-row{grid-template-columns:repeat(4,1fr);gap:4px}}
+
+.card-mini{
+  aspect-ratio:2/3;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:5px;position:relative;overflow:hidden;cursor:pointer;
+  transition:transform .18s,border-color .18s;
+}
+.card-mini:hover{transform:translateY(-3px) scale(1.05);border-color:var(--red);z-index:2}
+.card-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.card-mini .card-elixir{
+  position:absolute;bottom:2px;right:2px;
+  background:rgba(120,0,180,.85);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-size:.65rem;font-weight:700;
+  border-radius:3px;padding:0 3px;line-height:1.4;
+}
+.card-mini .card-name{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.8));
+  color:#fff;font-size:.5rem;padding:4px 2px 2px;
+  text-align:center;opacity:0;transition:opacity .15s;
+}
+.card-mini:hover .card-name{opacity:1}
+
+/* ——— ALL CARDS ——— */
+.all-cards-section{margin-bottom:1.5rem}
+.cards-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.filter-btn{
+  background:none;border:1px solid var(--border2);color:var(--muted);
+  border-radius:20px;padding:.3rem .75rem;font-size:.75rem;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all .15s;
+}
+.filter-btn.active,.filter-btn:hover{border-color:var(--red);color:var(--text)}
+.all-cards-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
+  gap:6px;
+}
+.card-item{
+  aspect-ratio:2/3;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:5px;position:relative;overflow:hidden;cursor:pointer;
+  transition:transform .18s,border-color .18s;
+  animation:cardIn .3s ease both;
+}
+.card-item:hover{transform:translateY(-4px) scale(1.08);border-color:var(--gold);z-index:2;
+  box-shadow:0 8px 20px rgba(244,196,48,.15)}
+@keyframes cardIn{from{opacity:0;transform:scale(.85) translateY(6px)}to{opacity:1;transform:none}}
+.card-item img{width:100%;height:100%;object-fit:cover;display:block}
+.card-item .ci-lvl{
+  position:absolute;bottom:2px;left:2px;
+  background:rgba(0,0,0,.75);color:var(--gold);
+  font-family:'Rajdhani',sans-serif;font-size:.6rem;font-weight:700;
+  border-radius:2px;padding:0 2px;
+}
+.card-item .ci-elixir{
+  position:absolute;top:2px;right:2px;
+  background:rgba(120,0,180,.85);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-size:.55rem;font-weight:700;
+  border-radius:2px;padding:0 2px;
+}
+.card-item .ci-name{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.85));
+  color:#fff;font-size:.45rem;padding:4px 2px 2px;text-align:center;
+  opacity:0;transition:opacity .15s;pointer-events:none;
+}
+.card-item:hover .ci-name{opacity:1}
+
+/* ——— LOADING ——— */
+#loading{
+  display:none;position:fixed;inset:0;background:rgba(10,10,10,.9);
+  align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:1rem;
+}
+#loading.show{display:flex}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--border2);
+  border-top-color:var(--red);border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
+
+/* ——— TOOLTIP ——— */
+.tooltip{
+  position:fixed;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--r2);padding:.5rem .75rem;font-size:.75rem;
+  pointer-events:none;z-index:999;display:none;max-width:160px;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+.tooltip.show{display:block}
+.tt-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.9rem;margin-bottom:2px}
+.tt-row{display:flex;justify-content:space-between;gap:.75rem;color:var(--muted)}
+.tt-row span:last-child{color:var(--text)}
+
+/* ——— MISC ——— */
+.empty-state{text-align:center;padding:2rem;color:var(--muted);font-size:.85rem}
+.badge{
+  display:inline-block;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:4px;padding:.15rem .5rem;font-size:.7rem;color:var(--muted);
+  font-family:'Rajdhani',sans-serif;letter-spacing:.04em;margin-left:.4rem;
+}
+.badge.red{border-color:var(--red);color:var(--red)}
+.badge.green{border-color:var(--green);color:var(--green)}
+.badge.gold{border-color:var(--gold);color:var(--gold)}
+
+.section{margin-bottom:1.8rem}
+
+/* Responsive */
+@media(max-width:480px){
+  .profile-content{padding:1.5rem 1rem}
+  .hero{padding:1rem}
+  .player-name{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- SEARCH SCREEN -->
+<div id="search-screen">
+  <div class="search-bg"></div>
+  <div class="logo">CR<span>Stats</span></div>
+  <div class="tagline">Profil Clash Royale</div>
+  <div class="search-wrap">
+    <input class="search-input" id="tag-input" type="text" placeholder="#TAG DU JOUEUR" maxlength="20" autocomplete="off" spellcheck="false">
+    <button class="search-btn" onclick="searchPlayer()">CHERCHER</button>
+  </div>
+  <div id="search-error"></div>
+  <div class="search-hint">Ex : <span>#2PP</span> · Entrez votre tag Clash Royale</div>
+</div>
+
+<!-- LOADING -->
+<div id="loading"><div class="spinner"></div><div class="loading-text">Chargement...</div></div>
+
+<!-- PROFILE SCREEN -->
+<div id="profile-screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showSearch()">← Retour</button>
+    <span class="top-tag" id="top-tag-label"></span>
+  </div>
+  <div class="profile-content" id="profile-content"></div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tt-name" id="tt-name">-</div>
+  <div class="tt-row"><span>Niveau</span><span id="tt-lvl">-</span></div>
+  <div class="tt-row"><span>Élixir</span><span id="tt-elixir">-</span></div>
+  <div class="tt-row"><span>Rareté</span><span id="tt-rarity">-</span></div>
+</div>
+
+<script>
+const API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjMxZWU4YjM1LWU2ZGYtNDJhYi1iNmE4LTRhYjkxNTFjZDkyMyIsImlhdCI6MTc4MTQ0NzIxMCwic3ViIjoiZGV2ZWxvcGVyLzRjZGJmYjBlLWM3YmUtMGE2Mi03NmE2LTMxOWU3ODFjMGQ4NiIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI4OS44NC4xMzMuMjM5Il0sInR5cGUiOiJjbGllbnQifV19.m8Jh18w3l2Ypxb9CDt1ZBplwPZrEI3KHCMCct642aVdRUGi5KAqlbcXFMu8Dd7jj83A9EthupO0L2uOzxnIznA';
+
+// Proxy CORS public pour l'API Clash Royale
+const PROXY = 'https://api.allorigins.win/raw?url=';
+const BASE = 'https://api.clashroyale.com/v1';
+
+let tooltip = document.getElementById('tooltip');
+let currentCards = [];
+
+document.getElementById('tag-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') searchPlayer();
+});
+
+function showSearch(){
+  document.getElementById('profile-screen').style.display = 'none';
+  document.getElementById('search-screen').style.display = '';
+  document.getElementById('search-error').textContent = '';
+}
+
+function setLoading(v){
+  document.getElementById('loading').className = v ? 'show' : '';
+}
+
+async function fetchCR(path){
+  // On attaque l'API en ligne droite, c'est l'extension qui gère la sécurité
+  const url = BASE + path; 
+  
+  const r = await fetch(url, {
+    headers:{ 'Authorization': 'Bearer ' + API_KEY }
+  });
+  if(!r.ok){
+    const err = await r.json().catch(()=>({}));
+    throw new Error(err.message || `HTTP ${r.status}`);
+  }
+  return r.json();
+}
+
+async function searchPlayer(){
+  let raw = document.getElementById('tag-input').value.trim().toUpperCase();
+  if(!raw){ showError('Entrez un tag de joueur'); return; }
+  if(!raw.startsWith('#')) raw = '#' + raw;
+  raw = raw.replace(/O/g,'0');
+
+  setLoading(true);
+  clearError();
+
+  try {
+    const enc = encodeURIComponent(raw);
+    const [player, upcoming] = await Promise.allSettled([
+      fetchCR(`/players/${enc}`),
+      fetchCR(`/players/${enc}/upcomingchests`)
+    ]);
+
+    if(player.status === 'rejected') throw player.reason;
+
+    renderProfile(player.value, upcoming.status === 'fulfilled' ? upcoming.value : null);
+    document.getElementById('search-screen').style.display = 'none';
+    document.getElementById('profile-screen').style.display = '';
+    document.getElementById('top-tag-label').textContent = raw;
+    window.scrollTo(0,0);
+  } catch(e){
+    showError(e.message.includes('404') ? 'Joueur introuvable. Vérifiez le tag.' : 'Erreur : ' + e.message);
+  } finally { setLoading(false); }
+}
+
+function showError(msg){ document.getElementById('search-error').textContent = msg; }
+function clearError(){ document.getElementById('search-error').textContent = ''; }
+
+function rarityLabel(r){
+  const m={'common':'Commune','rare':'Rare','epic':'Épique','legendary':'Légendaire','champion':'Champion'};
+  return m[r] || r;
+}
+function rarityColor(r){
+  const m={'common':'#aaa','rare':'#4a90d9','epic':'#9b59b6','legendary':'#f4c430','champion':'#e63946'};
+  return m[r] || '#888';
+}
+
+function renderProfile(p, chests){
+  const wins = p.wins || 0;
+  const losses = p.losses || 0;
+  const total = wins + losses;
+  const wr = total ? Math.round(wins/total*100) : 0;
+  const initials = (p.name||'?').replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase() || '?';
+
+  const cards = p.cards || [];
+  const favCards = cards.slice().sort((a,b)=>(b.count||0)-(a.count||0)).slice(0,4);
+  const decks = p.currentDeck ? [{ name:'Deck actuel', cards: p.currentDeck }] : [];
+  const supportDecks = (p.supportCard ? [p.supportCard] : []);
+
+  let html = '';
+
+  // HERO
+  html += `<div class="hero">
+    <div class="player-avatar">${initials}</div>
+    <div>
+      <div class="player-name">${esc(p.name||'Inconnu')}</div>
+      <div class="player-tag">${esc(p.tag||'')}</div>
+      <div class="player-clan">
+        ${p.clan ? `<span>Clan : </span>${esc(p.clan.name)}` : '<span style="color:var(--faint)">Sans clan</span>'}
+        ${p.role ? `<span class="badge">${esc(p.role)}</span>` : ''}
+      </div>
+    </div>
+    <div class="trophies-badge">
+      <div class="trophy-num">🏆 ${(p.trophies||0).toLocaleString()}</div>
+      <div class="trophy-label">Trophées</div>
+      ${p.bestTrophies ? `<div class="best-trophy">Record : ${p.bestTrophies.toLocaleString()}</div>` : ''}
+      ${p.leagueStatistics?.currentSeason?.trophies ? `<div class="best-trophy">Saison : ${p.leagueStatistics.currentSeason.trophies}</div>` : ''}
+    </div>
+  </div>`;
+
+  // ARENA
+  if(p.arena){
+    html += `<div><span class="arena-chip"><span class="arena-dot"></span>${esc(p.arena.name||'Arena '+p.arena.id)}</span></div>`;
+  }
+
+  // STATS
+  html += `<div class="section"><div class="section-title">Statistiques générales</div><div class="stats-grid">
+    <div class="stat-card"><div class="stat-val stat-green">${wins.toLocaleString()}</div><div class="stat-lbl">Victoires</div></div>
+    <div class="stat-card"><div class="stat-val stat-red">${losses.toLocaleString()}</div><div class="stat-lbl">Défaites</div></div>
+    <div class="stat-card"><div class="stat-val stat-gold">${(p.battleCount||wins+losses).toLocaleString()}</div><div class="stat-lbl">Batailles</div></div>
+    <div class="stat-card"><div class="stat-val stat-blue">${(p.threeCrownWins||0).toLocaleString()}</div><div class="stat-lbl">3 Couronnes</div></div>
+    <div class="stat-card"><div class="stat-val">${p.expLevel||'?'}</div><div class="stat-lbl">Niveau XP</div></div>
+    <div class="stat-card"><div class="stat-val stat-gold">${(p.starPoints||0).toLocaleString()}</div><div class="stat-lbl">Points Étoile</div></div>
+    ${p.warDayWins ? `<div class="stat-card"><div class="stat-val stat-green">${p.warDayWins.toLocaleString()}</div><div class="stat-lbl">Victoires Guerre</div></div>` : ''}
+    ${p.clanCardsCollected ? `<div class="stat-card"><div class="stat-val stat-blue">${p.clanCardsCollected.toLocaleString()}</div><div class="stat-lbl">Cartes Clan</div></div>` : ''}
+  </div></div>`;
+
+  // WIN RATE BAR
+  if(total > 0){
+    const wrColor = wr >= 55 ? 'var(--green)' : wr >= 45 ? 'var(--gold)' : 'var(--red)';
+    html += `<div class="section"><div class="section-title">Taux de victoire</div>
+    <div class="winrate-wrap">
+      <div class="winrate-row">
+        <span class="winrate-label">V/D</span>
+        <span class="winrate-pct" style="color:${wrColor}">${wr}%</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${wr}%;background:${wrColor}"></div></div>
+      <div class="bar-wl">
+        <span style="color:var(--green)"><b>${wins.toLocaleString()}</b> V</span>
+        <span> / </span>
+        <span style="color:var(--red)"><b>${losses.toLocaleString()}</b> D</span>
+        <span style="margin-left:auto;color:var(--faint)">sur ${total.toLocaleString()} parties</span>
+      </div>
+    </div></div>`;
+  }
+
+  // DECK ACTUEL
+  if(p.currentDeck && p.currentDeck.length > 0){
+    html += `<div class="section"><div class="section-title">Deck actuel</div><div class="deck-grid">`;
+    html += `<div class="deck-row">
+      <div class="deck-header">
+        <span class="deck-name">8 cartes sélectionnées</span>
+        <span class="deck-level">Avg élixir : ${avgElixir(p.currentDeck)}</span>
+      </div>
+      <div class="cards-row">${p.currentDeck.map(c=>cardMini(c)).join('')}</div>
+    </div>`;
+    html += `</div></div>`;
+  }
+
+  // FAVOURITE CARDS
+  if(favCards.length > 0){
+    html += `<div class="section"><div class="section-title">Cartes favorites <span class="badge">Top ${favCards.length}</span></div>
+    <div class="stats-grid">`;
+    favCards.forEach(c => {
+      const img = cardImg(c);
+      html += `<div class="stat-card" style="display:flex;gap:.75rem;align-items:center;cursor:pointer"
+        onmouseenter="showTT(event,${JSON.stringify(c).replace(/"/g,"'")})"
+        onmouseleave="hideTT()"
+        onmousemove="moveTT(event)">
+        <div style="width:40px;height:60px;flex-shrink:0;border-radius:4px;overflow:hidden;background:var(--bg4);border:1px solid var(--border2)">
+          ${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🃏</div>`}
+        </div>
+        <div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:600;line-height:1.2">${esc(c.name||'')}</div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem" id="">Nv. ${c.level||1}</div>
+          <div style="font-size:.7rem;color:${rarityColor(c.rarity)}">${rarityLabel(c.rarity||'')}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ALL CARDS
+  if(cards.length > 0){
+    const rarities = [...new Set(cards.map(c=>c.rarity).filter(Boolean))];
+    html += `<div class="section all-cards-section">
+      <div class="section-title">Collection de cartes <span class="badge">${cards.length}</span></div>
+      <div class="cards-filter">
+        <button class="filter-btn active" onclick="filterCards('all',this)">Toutes</button>
+        ${rarities.map(r=>`<button class="filter-btn" onclick="filterCards('${r}',this)">${rarityLabel(r)}</button>`).join('')}
+      </div>
+      <div class="all-cards-grid" id="all-cards-grid">${renderCardGrid(cards)}</div>
+    </div>`;
+    currentCards = cards;
+  }
+
+  // LEAGUE STATS
+  if(p.leagueStatistics){
+    const ls = p.leagueStatistics;
+    html += `<div class="section"><div class="section-title">Statistiques de ligue</div><div class="stats-grid">`;
+    if(ls.currentSeason){
+      html += `<div class="stat-card"><div class="stat-val stat-gold">${ls.currentSeason.bestTrophies||ls.currentSeason.trophies||0}</div><div class="stat-lbl">Record saison</div></div>`;
+    }
+    if(ls.previousSeason){
+      html += `<div class="stat-card"><div class="stat-val stat-blue">${ls.previousSeason.trophies||0}</div><div class="stat-lbl">Saison précédente</div></div>`;
+    }
+    if(ls.bestSeason){
+      html += `<div class="stat-card"><div class="stat-val stat-gold">${ls.bestSeason.trophies||0}</div><div class="stat-lbl">Meilleure saison</div></div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  document.getElementById('profile-content').innerHTML = html;
+}
+
+function renderCardGrid(cards){
+  return cards.map((c,i)=>{
+    const img = cardImg(c);
+    const delay = Math.min(i*0.02, 0.5);
+    return `<div class="card-item" style="animation-delay:${delay}s"
+      onmouseenter="showTT(event,${JSON.stringify(c).replace(/"/g,"'")})"
+      onmouseleave="hideTT()"
+      onmousemove="moveTT(event)">
+      ${img ? `<img src="${img}" loading="lazy">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem">🃏</div>`}
+      ${c.level ? `<div class="ci-lvl">${c.level}</div>` : ''}
+      ${c.elixirCost ? `<div class="ci-elixir">${c.elixirCost}</div>` : ''}
+      <div class="ci-name">${esc(c.name||'')}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterCards(rarity, btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = rarity === 'all' ? currentCards : currentCards.filter(c=>c.rarity===rarity);
+  document.getElementById('all-cards-grid').innerHTML = renderCardGrid(filtered);
+}
+
+function cardMini(c){
+  const img = cardImg(c);
+  return `<div class="card-mini"
+    onmouseenter="showTT(event,${JSON.stringify(c).replace(/"/g,"'")})"
+    onmouseleave="hideTT()"
+    onmousemove="moveTT(event)">
+    ${img ? `<img src="${img}" loading="lazy">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1rem">🃏</div>`}
+    ${c.elixirCost ? `<div class="card-elixir">${c.elixirCost}</div>` : ''}
+    <div class="card-name">${esc(c.name||'')}</div>
+  </div>`;
+}
+
+function cardImg(c){
+  if(c.iconUrls && c.iconUrls.medium) return c.iconUrls.medium;
+  if(c.iconUrls && c.iconUrls.large) return c.iconUrls.large;
+  return null;
+}
+
+function avgElixir(cards){
+  const withElixir = cards.filter(c=>c.elixirCost);
+  if(!withElixir.length) return '?';
+  return (withElixir.reduce((s,c)=>s+c.elixirCost,0)/withElixir.length).toFixed(1);
+}
+
+function esc(s){ return (s||'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function showTT(e, card){
+  const tt = document.getElementById('tooltip');
+  document.getElementById('tt-name').textContent = card.name || '';
+  document.getElementById('tt-lvl').textContent = card.level || '?';
+  document.getElementById('tt-elixir').textContent = card.elixirCost !== undefined ? card.elixirCost : '?';
+  document.getElementById('tt-rarity').textContent = rarityLabel(card.rarity || '');
+  document.getElementById('tt-rarity').style.color = rarityColor(card.rarity||'');
+  tt.style.left = (e.clientX + 14) + 'px';
+  tt.style.top = (e.clientY + 14) + 'px';
+  tt.classList.add('show');
+}
+function hideTT(){ document.getElementById('tooltip').classList.remove('show'); }
+function moveTT(e){
+  const tt = document.getElementById('tooltip');
+  tt.style.left = (e.clientX + 14) + 'px';
+  tt.style.top = (e.clientY + 14) + 'px';
+}
+</script>
+</body>
+</html>
