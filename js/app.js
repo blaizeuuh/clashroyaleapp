@@ -4,9 +4,8 @@
  * Copiez config.example.js → config.js et ajoutez votre clé.
  */
 
-// Proxy CORS (requis pour GitHub Pages)
-const PROXY = 'https://api.allorigins.win/raw?url=';
-const BASE   = 'https://api.clashroyale.com/v1';
+// Proxy CORS (transmet les headers Authorization)
+const BASE = 'https://api.clashroyale.com/v1';
 
 let currentCards = [];
 
@@ -35,9 +34,6 @@ function setLoading(v) {
 ──────────────────────────────────────────────────────── */
 async function fetchCR(path) {
   const url = BASE + path;
-  const proxied = PROXY + encodeURIComponent(url + (url.includes('?') ? '&' : '?') + '_auth=Bearer ' + API_KEY);
-  // On passe le token via un header custom en passant par allorigins
-  // allorigins ne supporte pas les headers custom — on utilise un second proxy
   const r = await fetch(
     `https://corsproxy.io/?${encodeURIComponent(url)}`,
     { headers: { 'Authorization': 'Bearer ' + API_KEY } }
